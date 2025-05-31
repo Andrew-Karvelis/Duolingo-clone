@@ -64,6 +64,7 @@ export default function Profile({
 }: ProfileProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isBadgesModalOpen, setIsBadgesModalOpen] = useState(false);
+  const [isMonthlyBadgesModalOpen, setIsMonthlyBadgesModalOpen] = useState(false);
   const mainCourse = courses[0];
   const remainingCourses = courses.slice(1);
   const additionalCoursesCount = remainingCourses.length;
@@ -74,6 +75,8 @@ export default function Profile({
 
   // Group badges by type and year
   const groupedBadges = badges.reduce((acc, badge) => {
+    if (!badge.isEarned) return acc;
+    
     const date = new Date(badge.earnedDate);
     const year = date.getFullYear();
     if (!acc[year]) {
@@ -84,7 +87,7 @@ export default function Profile({
     }
     if (badge.type === 'monthly') {
       acc[year].monthly[new Date(badge.earnedDate).getMonth()] = badge;
-    } else {
+    } else if (badge.type === 'achievement') {
       acc[year].achievements.push(badge);
     }
     return acc;
@@ -98,6 +101,7 @@ export default function Profile({
     if (e.target === e.currentTarget) {
       setIsModalOpen(false);
       setIsBadgesModalOpen(false);
+      setIsMonthlyBadgesModalOpen(false);
     }
   };
 
@@ -218,6 +222,57 @@ export default function Profile({
         </div>
       )}
 
+      {/* Monthly Badges Modal */}
+      {isMonthlyBadgesModalOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          onClick={handleModalClick}
+        >
+          <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[80vh] overflow-y-auto relative">
+            <button
+              onClick={() => setIsMonthlyBadgesModalOpen(false)}
+              className="fixed z-10 right-4 top-4 text-gray-500 hover:text-gray-700 bg-white rounded-full p-1 shadow-md"
+            >
+              <FaTimes size={20} />
+            </button>
+            <h2 className="text-xl font-semibold mb-6">Monthly Badges</h2>
+            <div className="space-y-12">
+              {years.map(year => (
+                <div key={year} className="space-y-6">
+                  <h3 className="text-lg font-semibold text-gray-700">{year}</h3>
+                  
+                  {/* Monthly Badges Grid */}
+                  <div className="grid grid-cols-3 gap-y-8 gap-x-2">
+                    {groupedBadges[year].monthly.map((badge, index) => {
+                      if (!badge && year === 2022 && index < 6) return null; // Skip first 6 months of 2022
+                      if (!badge) {
+                        const month = new Date(year, index).toLocaleString('default', { month: 'short' });
+                        return (
+                          <div key={`empty-${year}-${index}`} className="flex flex-col items-center">
+                            <div className="w-32 h-32 rounded-full bg-gray-100 flex items-center justify-center opacity-30">
+                              <span className="text-4xl">❔</span>
+                            </div>
+                            <p className="text-sm text-gray-400 mt-2">{month}</p>
+                          </div>
+                        );
+                      }
+                      return (
+                        <div key={badge.id} className="flex flex-col items-center">
+                          <div className={`w-32 h-32 rounded-full ${badge.isEarned ? 'bg-gray-50' : 'bg-gray-100 opacity-30'} flex items-center justify-center shadow-sm`}>
+                            <span className="text-4xl">{badge.icon}</span>
+                          </div>
+                          <p className="text-sm text-gray-600 mt-2">{badge.name}</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-lg">
         <div className="flex flex-col items-center">
           {/* Avatar */}
@@ -307,7 +362,7 @@ export default function Profile({
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold">Monthly Badges</h2>
               <button
-                onClick={() => setIsBadgesModalOpen(true)}
+                onClick={() => setIsMonthlyBadgesModalOpen(true)}
                 className="text-sm text-blue-600 hover:text-blue-700 font-medium"
               >
                 View All
