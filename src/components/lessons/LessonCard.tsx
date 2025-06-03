@@ -47,14 +47,29 @@ export function LessonCard({ lesson, onStart }: LessonCardProps) {
         </span>
       </div>
       
-      {!isLocked && !isCompleted && (
-        <button
-          onClick={() => onStart(lesson)}
-          className="mt-4 w-full bg-green-500 text-white py-2 px-4 rounded-lg
-            hover:bg-green-600 transition-colors duration-200"
-        >
-          Start Lesson
-        </button>
+      {!isLocked && (
+        <div className="mt-4 space-y-2">
+          {isCompleted ? (
+            <>
+              <button
+                onClick={() => onStart(lesson)}
+                className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg
+                  hover:bg-blue-600 transition-colors duration-200"
+              >
+                Practice Again
+              </button>
+              <p className="text-sm text-center text-green-600">Completed ✓</p>
+            </>
+          ) : (
+            <button
+              onClick={() => onStart(lesson)}
+              className="w-full bg-green-500 text-white py-2 px-4 rounded-lg
+                hover:bg-green-600 transition-colors duration-200"
+            >
+              Start Lesson
+            </button>
+          )}
+        </div>
       )}
     </motion.div>
   );

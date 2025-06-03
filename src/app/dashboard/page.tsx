@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 import { FireIcon } from '@heroicons/react/24/solid';
 import { LessonCard } from '@/components/lessons/LessonCard';
 import { useStore } from '@/store/useStore';
@@ -9,6 +10,7 @@ import { staggerContainer } from '@/utils/animations';
 import { sampleUser, sampleLessons } from '@/data/sampleData';
 
 export default function DashboardPage() {
+  const router = useRouter();
   const { user, availableLessons, setUser, updateStreak } = useStore();
 
   // Initialize with sample data
@@ -19,6 +21,10 @@ export default function DashboardPage() {
     }
     updateStreak();
   }, [user, setUser, updateStreak]);
+
+  const handleStartLesson = (lessonId: string) => {
+    router.push(`/lessons/${lessonId}`);
+  };
 
   if (!user) {
     return (
@@ -61,10 +67,7 @@ export default function DashboardPage() {
           <LessonCard
             key={lesson.id}
             lesson={lesson}
-            onStart={(lesson) => {
-              // Handle lesson start - implement navigation
-              console.log('Starting lesson:', lesson.id);
-            }}
+            onStart={() => handleStartLesson(lesson.id)}
           />
         ))}
       </motion.div>

@@ -28,6 +28,11 @@ export function QuizQuestion({ exercise, onAnswer, onNext }: QuizQuestionProps) 
     onNext();
   };
 
+  const handleOptionClick = (option: string) => {
+    if (hasAnswered) return;
+    setSelectedAnswer(option);
+  };
+
   return (
     <motion.div
       variants={popIn}
@@ -40,27 +45,38 @@ export function QuizQuestion({ exercise, onAnswer, onNext }: QuizQuestionProps) 
       </h3>
 
       <div className="space-y-3">
-        {exercise.options?.map((option) => (
-          <motion.button
-            key={option}
-            onClick={() => !hasAnswered && setSelectedAnswer(option)}
-            className={`
-              w-full p-4 text-left rounded-xl border-2 transition-all
-              ${selectedAnswer === option
-                ? hasAnswered
-                  ? isCorrect
-                    ? 'border-green-500 bg-green-50'
-                    : 'border-red-500 bg-red-50'
-                  : 'border-blue-500 bg-blue-50'
-                : 'border-gray-200 hover:border-gray-300'
-              }
-            `}
-            whileHover={!hasAnswered ? { scale: 1.02 } : undefined}
-            whileTap={!hasAnswered ? { scale: 0.98 } : undefined}
-          >
-            {option}
-          </motion.button>
-        ))}
+        {exercise.options?.map((option) => {
+          const isSelected = selectedAnswer === option;
+          const isCorrectAnswer = option === exercise.correctAnswer;
+          let optionStyle = 'border-gray-200 hover:border-gray-300';
+          
+          if (hasAnswered) {
+            if (isCorrectAnswer) {
+              optionStyle = 'border-green-500 bg-green-50';
+            } else if (isSelected) {
+              optionStyle = 'border-red-500 bg-red-50';
+            }
+          } else if (isSelected) {
+            optionStyle = 'border-blue-500 bg-blue-50';
+          }
+
+          return (
+            <motion.button
+              key={option}
+              onClick={() => handleOptionClick(option)}
+              className={`
+                w-full p-4 text-left rounded-xl border-2 transition-all
+                ${optionStyle}
+                ${hasAnswered && !isCorrectAnswer && !isSelected ? 'opacity-50' : ''}
+              `}
+              whileHover={!hasAnswered ? { scale: 1.02 } : undefined}
+              whileTap={!hasAnswered ? { scale: 0.98 } : undefined}
+              disabled={hasAnswered}
+            >
+              {option}
+            </motion.button>
+          );
+        })}
       </div>
 
       <AnimatePresence>
@@ -87,16 +103,17 @@ export function QuizQuestion({ exercise, onAnswer, onNext }: QuizQuestionProps) 
       </AnimatePresence>
 
       <div className="flex justify-end space-x-3">
-        <Button
-          variant={hasAnswered ? 'success' : 'primary'}
-          disabled={!selectedAnswer || hasAnswered}
-          onClick={handleAnswer}
-        >
-          Check Answer
-        </Button>
-        {hasAnswered && (
+        {!hasAnswered ? (
           <Button
             variant="primary"
+            disabled={!selectedAnswer}
+            onClick={handleAnswer}
+          >
+            Check Answer
+          </Button>
+        ) : (
+          <Button
+            variant="success"
             onClick={handleNext}
           >
             Next Question
